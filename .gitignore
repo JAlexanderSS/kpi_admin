@@ -1,0 +1,26 @@
+# Entornos virtuales
+venv/
+.env
+.env.*
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Archivos de VS Code (si usas)
+.vscode/
+
+# Archivos de ejecución temporal
+*.log
+*.sqlite3
+*.db
+*.bak
+*.tmp
+*~  # archivos de respaldo
+
+# Archivos específicos de desarrollo
+tempCodeRunnerFile.py
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
