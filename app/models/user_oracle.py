@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Boolean
-from app.db.base import Base
+from app.db.base_oracle import Base  # Asegúrate que estés importando desde la base de Oracle
 
-
-class User(Base):
+class UserOracle(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -13,3 +12,4 @@ class User(Base):
     otp_secret = Column(String)
     is_2fa_enabled = Column(Boolean, default=False)
     email = Column(String(100), nullable=False)
+

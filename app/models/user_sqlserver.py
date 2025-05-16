@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Boolean
-from app.db.base import Base
+from app.db.sqlserver import BaseSQLServer
 
-
-class User(Base):
+class UserSQLServer(BaseSQLServer):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
