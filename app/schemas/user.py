@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     password_hash: str
     date_of_birth: date
     gender: str
-    email: EmailStr  # <-- Nuevo campo comúnmente necesario
+    email: EmailStr
 
 
 class UserOut(BaseModel):
@@ -17,7 +17,7 @@ class UserOut(BaseModel):
     date_of_birth: date
     gender: Optional[str]
     is_2fa_enabled: bool
-    email: EmailStr  # <-- Incluir también en la salida
+    email: EmailStr
 
     class Config:
         from_attributes = True
@@ -29,7 +29,11 @@ class UserUpdate(BaseModel):
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
     email: Optional[EmailStr] = None
+    is_2fa_enabled: Optional[bool] = None  # Opcional para habilitar 2FA
+    otp_secret: Optional[str] = None       # Para actualizar secreto si lo deseas
+
 
 class LoginInput(BaseModel):
-    email: str
+    email: EmailStr
     password: str
+    otp_code: Optional[str] = None  # ✅ Este campo es clave para 2FA

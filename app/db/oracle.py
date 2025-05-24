@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app import config
+from app.models.user_oracle import UserOracle  # Asegúrate de importar el modelo
 
 DATABASE_URL = (
     f"oracle+oracledb://{config.ORACLE_USER}:{config.ORACLE_PASSWORD}"
@@ -14,3 +15,11 @@ SessionLocalOracle = sessionmaker(
     autoflush=False,
     bind=engine_oracle
 )
+
+# ✅ Función para contar usuarios
+def get_oracle_users_count():
+    db = SessionLocalOracle()
+    try:
+        return db.query(UserOracle).count()
+    finally:
+        db.close()

@@ -20,4 +20,12 @@ DATABASE_URL_SQLSERVER = f"mssql+pyodbc:///?odbc_connect={get_sqlserver_connecti
 engine_sqlserver = create_engine(DATABASE_URL_SQLSERVER)
 SessionLocalSqlServer = sessionmaker(autocommit=False, autoflush=False, bind=engine_sqlserver)
 
-BaseSQLServer = declarative_base()  # 👈 necesario para tus modelos
+BaseSQLServer = declarative_base()
+
+# ✅ Función para contar usuarios
+def get_sqlserver_users_count():
+    db = SessionLocalSqlServer()
+    try:
+        return db.query(UserSqlServer).count()
+    finally:
+        db.close()

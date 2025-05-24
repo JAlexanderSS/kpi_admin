@@ -1,3 +1,6 @@
+// ✅ Limpia el token al abrir el login manualmente
+localStorage.removeItem("token");
+
 document.getElementById("showRegister").addEventListener("click", (e) => {
   e.preventDefault();
   document.getElementById("loginForm").classList.add("hidden");
@@ -10,6 +13,10 @@ document.getElementById("showLogin").addEventListener("click", (e) => {
   document.getElementById("loginForm").classList.remove("hidden");
 });
 
+// Variables para el QR modal
+let currentUserId = null;
+let currentDb = null;
+
 document.getElementById("registerBtn").addEventListener("click", async () => {
   const username = document.getElementById("registerUser").value.trim();
   const password = document.getElementById("registerPassword").value.trim();
@@ -19,12 +26,8 @@ document.getElementById("registerBtn").addEventListener("click", async () => {
 
   const selectedDbs = Array.from(document.querySelectorAll('input[name="dbSelect"]:checked')).map(cb => cb.value);
 
-  if (!username || !password || !email || !dob || !gender) {
-    return alert("Por favor, completa todos los campos");
-  }
-
-  if (selectedDbs.length === 0) {
-    return alert("Selecciona al menos una base de datos");
+  if (!username || !password || !email || !dob || !gender || selectedDbs.length === 0) {
+    return alert("Por favor, completa todos los campos y selecciona al menos una base de datos.");
   }
 
   const payload = {
@@ -32,15 +35,10 @@ document.getElementById("registerBtn").addEventListener("click", async () => {
     password_hash: password,
     date_of_birth: dob,
     gender,
-    otp_secret: "STATIC_OTP",
-    is_2fa_enabled: false,
     email
   };
 
-  console.log("Payload a enviar:", payload);
-
   for (const db of selectedDbs) {
-    console.log(`Enviando a /api/v1/${db}/`);
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/v1/${db}/`, {
         method: "POST",
@@ -50,61 +48,110 @@ document.getElementById("registerBtn").addEventListener("click", async () => {
         body: JSON.stringify(payload)
       });
 
+      const result = await res.json();
+
       if (!res.ok) {
-        const error = await res.json();
-        console.error(`Error en ${db}:`, error);
-        alert(`Error al registrar en ${db}: ${error.detail || 'Error desconocido'}`);
-      } else {
-        console.log(`Usuario registrado correctamente en ${db}`);
+        alert(`❌ Error al registrar en ${db}: ${result.detail}`);
+        continue;
       }
+
+      // Guardar para verificar OTP luego
+      currentUserId = result.user.id;
+      currentDb = db;
+
+      // Mostrar QR en modal
+      const qrImage = document.getElementById("qrImage");
+      qrImage.src = `data:image/png;base64,${result.qr_code_base64}`;
+      document.getElementById("qrContainer").classList.remove("hidden");
+
+      return; // Solo procesamos uno a la vez
     } catch (err) {
-      console.error(`Fallo la conexión con ${db}:`, err);
-      alert(`Error de conexión con ${db}: ${err.message}`);
+      console.error(`Error en ${db}:`, err);
+      alert(`Error en ${db}: ${err.message}`);
     }
   }
 
-  alert("Registro completado.");
+  alert("✅ Registro completado.");
 });
 
+// ✅ Verificación de OTP desde el modal
+document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
+  const otp_code = document.getElementById("otpInput").value.trim();
 
+  if (!otp_code || !currentUserId || !currentDb) {
+    return alert("Completa el código correctamente.");
+  }
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/v1/${currentDb}/verify-otp/${currentUserId}?otp_code=${otp_code}`, {
+      method: "POST"
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      alert(`✅ Autenticación 2FA activada en ${currentDb}`);
+    } else {
+      alert(`❌ Código OTP incorrecto en ${currentDb}`);
+    }
+  } catch (err) {
+    console.error("Error verificando OTP:", err);
+    alert("Error al verificar OTP.");
+  }
+
+  // Cerrar y limpiar modal
+  document.getElementById("qrContainer").classList.add("hidden");
+  document.getElementById("otpInput").value = "";
+  currentUserId = null;
+  currentDb = null;
+});
+
+document.getElementById("closeQRBtn").addEventListener("click", () => {
+  document.getElementById("qrContainer").classList.add("hidden");
+  document.getElementById("otpInput").value = "";
+  currentUserId = null;
+  currentDb = null;
+});
 
 document.getElementById("loginBtn").addEventListener("click", async () => {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
+  const otp_code = document.getElementById("loginOtp").value.trim();
 
   if (!email || !password) {
     return alert("Por favor, completa tu email y contraseña");
   }
 
   const endpoints = ["users", "oracle-users", "sql-users"];
-  let loginCorrecto = false;
+  let token = null;
 
   for (const db of endpoints) {
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/v1/${db}/validate-login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password, otp_code })
       });
 
-      if (res.ok) {
-        const result = await res.json();
-        if (result.success === true) {
-          loginCorrecto = true;
-          break;
-        }
+      const result = await res.json();
+
+      if (res.ok && result.success && result.access_token) {
+        token = result.access_token;
+        break;
       }
     } catch (err) {
       console.error(`Error en ${db}:`, err);
     }
   }
 
-  if (loginCorrecto) {
+  if (token) {
+    console.log("🔐 TOKEN GUARDADO:", token);
+    localStorage.setItem("token", token);
     alert("✅ Inicio de sesión exitoso");
+    window.location.href = "dashboard.html";
   } else {
-    alert("❌ Usuario o contraseña incorrectos");
+    alert("❌ Usuario, contraseña o código OTP incorrecto");
   }
 });

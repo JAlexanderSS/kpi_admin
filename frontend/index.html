@@ -1,38 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login y Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center font-sans">
+
   <!-- Login Form -->
   <div id="loginForm" class="bg-white p-8 rounded shadow-md w-full max-w-md">
     <h2 class="text-2xl font-semibold mb-4 text-center">Iniciar sesión</h2>
-    <p class="text-center text-sm mb-4">¿Es tu primera vez? <a href="#" id="showRegister" class="text-blue-500 hover:underline">Regístrate</a></p>
+    <p class="text-center text-sm mb-4">
+      ¿Es tu primera vez?
+      <a href="#" id="showRegister" class="text-blue-500 hover:underline">Regístrate</a>
+    </p>
 
     <label class="block mb-2">Email *</label>
     <input type="email" id="loginEmail" class="w-full p-2 border rounded mb-4" placeholder="Email" />
 
     <label class="block mb-2">Contraseña *</label>
-    <input type="password" id="loginPassword" class="w-full p-2 border rounded mb-2" placeholder="Contraseña" />
-    <a href="#" class="text-sm text-blue-500 hover:underline block mb-4">¿Olvidaste la contraseña?</a>
+    <input type="password" id="loginPassword" class="w-full p-2 border rounded mb-4" placeholder="Contraseña" />
 
-    <button id="loginBtn" class="w-full bg-black text-white py-2 rounded mb-4">Iniciar sesión</button>
+    <label class="block mb-2">Código de autenticación (si aplica)</label>
+    <input type="text" id="loginOtp" class="w-full p-2 border rounded mb-4" placeholder="123456" />
 
-    <div class="text-center text-sm text-gray-600">o conéctate con</div>
-    <div class="flex justify-center gap-4 mt-4">
-      <img src="https://img.icons8.com/color/48/facebook.png" alt="Facebook" class="w-6 h-6 cursor-pointer" />
-      <img src="https://img.icons8.com/color/48/google-logo.png" alt="Google" class="w-6 h-6 cursor-pointer" />
-    </div>
+    <button id="loginBtn" class="w-full bg-black text-white py-2 rounded">Iniciar sesión</button>
   </div>
 
-  <!-- Register Form (Hidden by default) -->
+  <!-- Register Form -->
   <div id="registerForm" class="hidden bg-white p-8 rounded shadow-md w-full max-w-md">
     <h2 class="text-2xl font-semibold mb-4 text-center">Registrarse</h2>
-    <p class="text-center text-sm mb-4">¿Ya tienes una cuenta? <a href="#" id="showLogin" class="text-blue-500 hover:underline">Inicia sesión</a></p>
+    <p class="text-center text-sm mb-4">
+      ¿Ya tienes una cuenta?
+      <a href="#" id="showLogin" class="text-blue-500 hover:underline">Inicia sesión</a>
+    </p>
 
     <label class="block mb-2">Nombre de usuario *</label>
     <input type="text" id="registerUser" class="w-full p-2 border rounded mb-4" placeholder="Ej: alexuser" />
@@ -54,14 +56,27 @@
     </select>
 
     <label class="block mb-2">Bases de datos donde registrarse:</label>
-    <label><input type="checkbox" name="dbSelect" value="users" /> PostgreSQL</label>
-    <label><input type="checkbox" name="dbSelect" value="oracle-users" /> Oracle</label>
+    <label><input type="checkbox" name="dbSelect" value="users" /> PostgreSQL</label><br>
+    <label><input type="checkbox" name="dbSelect" value="oracle-users" /> Oracle</label><br>
     <label><input type="checkbox" name="dbSelect" value="sql-users" /> SQL Server</label>
 
     <button id="registerBtn" class="mt-6 w-full bg-blue-500 text-white py-2 rounded">Registrarse</button>
   </div>
 
+  <!-- Modal QR para verificación OTP -->
+  <div id="qrContainer" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md text-center w-full max-w-sm">
+      <h3 class="text-lg font-semibold mb-2">Escanea el código QR</h3>
+      <img id="qrImage" src="" alt="Código QR" class="mx-auto my-4 w-40 h-40" />
+      <label class="block text-sm mb-1">Ingresa el código de 6 dígitos:</label>
+      <input type="text" id="otpInput" class="w-full p-2 border rounded mb-4" placeholder="123456" maxlength="6" />
+      <div class="flex justify-end gap-2">
+        <button id="verifyOtpBtn" class="bg-blue-600 text-white px-4 py-1 rounded">Verificar</button>
+        <button id="closeQRBtn" class="bg-red-500 text-white px-4 py-1 rounded">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
-
 </html>
